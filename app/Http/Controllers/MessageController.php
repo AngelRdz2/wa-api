@@ -22,9 +22,9 @@ class MessageController extends Controller
     {
         $request->validate([
             //'phone' => 'required|string',
-            'message' => 'required|string',
+            //'message' => 'required|string',
         ]);
-
+        //dd(\App\Models\Client::getMessage(3));
         //$phone = $request->input('phone'); // El número de teléfono del destinatario
         $message = $request->input('message');
         $apiToken = '3FpCLjIUrWTE6WhE94ByGoQ8fLESkZVgYx6RiWYIc90145e3';
@@ -52,7 +52,7 @@ class MessageController extends Controller
             }
 
             $sendMessageUrl = "https://waapi.app/api/v1/instances/{$instanceId}/client/action/send-message";
-            \App\Models\Client::sendMassive($clientMessage, $sendMessageUrl, $apiToken, $message);
+            \App\Models\Client::sendMassive($clientMessage, $sendMessageUrl, $apiToken);
             /*$response = $clientMessage->request('POST', $sendMessageUrl, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $apiToken,

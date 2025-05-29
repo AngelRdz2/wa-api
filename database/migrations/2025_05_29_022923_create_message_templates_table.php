@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('moratorium_classification_id')->constrained('moratorium_classifications');
             $table->string('template_name');
-            $table->string('template');
+            $table->text('template');
             $table->timestamps();
         });
     }

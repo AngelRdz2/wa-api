@@ -23,8 +23,8 @@
                             <input type="text" id="phone" name="phone" class="form-control" required>--}}
                         </div>
                         <div class="mb-3">
-                            <label for="message" class="form-label">Mensaje</label>
-                            <textarea id="message" name="message" class="form-control" rows="4" required></textarea>
+                            {{--<label for="message" class="form-label">Mensaje</label>
+                            <textarea id="message" name="message" class="form-control" rows="4" required></textarea>--}}
                         </div>
                         <button type="submit" class="btn btn-success w-100">Enviar</button>
                     </form>
