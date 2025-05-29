@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('dui');
             $table->smallInteger('status')->default(0);
-            $table->foreignId('moratorium_classification_id')->constrained('moratorium_classifications');
+            $table->foreignId('moratorium_classification_id')->nullable()->constrained('moratorium_classifications');
             $table->timestamps();
         });
     }
