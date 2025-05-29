@@ -19,8 +19,8 @@
                     <form method="POST" action="{{ route('send.message') }}">
                         @csrf
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Número</label>
-                            <input type="text" id="phone" name="phone" class="form-control" required>
+                            {{--<label for="phone" class="form-label">Número</label>
+                            <input type="text" id="phone" name="phone" class="form-control" required>--}}
                         </div>
                         <div class="mb-3">
                             <label for="message" class="form-label">Mensaje</label>

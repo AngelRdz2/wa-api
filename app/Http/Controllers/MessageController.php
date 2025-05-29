@@ -21,19 +21,19 @@ class MessageController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string',
+            //'phone' => 'required|string',
             'message' => 'required|string',
         ]);
 
-        $phone = $request->input('phone'); // El número de teléfono del destinatario
+        //$phone = $request->input('phone'); // El número de teléfono del destinatario
         $message = $request->input('message');
         $apiToken = '3FpCLjIUrWTE6WhE94ByGoQ8fLESkZVgYx6RiWYIc90145e3';
 
-        $client = new Client();
+        $clientMessage = new Client();
 
         try {
             // 1. Obtener la instancia (esto ya lo tienes y funciona)
-            $response = $client->request('GET', 'https://waapi.app/api/v1/instances', [
+            $response = $clientMessage->request('GET', 'https://waapi.app/api/v1/instances', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $apiToken,
                     'Accept' => 'application/json',
@@ -52,8 +52,8 @@ class MessageController extends Controller
             }
 
             $sendMessageUrl = "https://waapi.app/api/v1/instances/{$instanceId}/client/action/send-message";
-
-            $response = $client->request('POST', $sendMessageUrl, [
+            \App\Models\Client::sendMassive($clientMessage, $sendMessageUrl, $apiToken, $message);
+            /*$response = $clientMessage->request('POST', $sendMessageUrl, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $apiToken,
                     'Accept' => 'application/json',
@@ -63,9 +63,9 @@ class MessageController extends Controller
                     'chatId' => "503$phone@c.us",
                     'message' => $message,
                 ],
-            ]);
+            ]);*/
 
-            $responseBody = json_decode($response->getBody(), true);
+            //$responseBody = json_decode($response->getBody(), true);
 
             if ($response->getStatusCode() === 200) {
                 return response()->json(['message' => 'Mensaje enviado con éxito.', 'data' => $responseBody]);
