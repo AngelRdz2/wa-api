@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Mensajes WAAPI</title>
-    <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -11,10 +10,17 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
+
             <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Enviar mensaje</h4>
+                    <!-- Botón Cerrar Sesión -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-sm">Cerrar sesión</button>
+                    </form>
                 </div>
+
                 <div class="card-body">
                     <form method="POST" action="{{ route('send.message') }}">
                         @csrf
@@ -29,13 +35,13 @@
                         <button type="submit" class="btn btn-success w-100">Enviar</button>
                     </form>
                 </div>
+
             </div>
+
         </div>
     </div>
 </div>
 
-<!-- Bootstrap JS CDN (opcional, para componentes como modals) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
