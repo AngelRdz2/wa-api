@@ -15,12 +15,10 @@
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
-
             <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+                          type="password"
+                          name="password"
+                          required autocomplete="current-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
@@ -42,6 +40,13 @@
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>
+        </div>
+
+        <!-- Botón de registro -->
+        <div class="mt-6 text-center">
+            <a href="{{ route('register') }}" class="text-sm text-blue-600 hover:underline dark:text-blue-400">
+                ¿No tienes una cuenta? Regístrate aquí
+            </a>
         </div>
     </form>
 </x-guest-layout>

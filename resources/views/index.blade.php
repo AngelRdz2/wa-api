@@ -42,6 +42,18 @@
     </div>
 </div>
 
+<!-- Formulario para subir archivo Excel -->
+<section id="subir-excel" class="mb-6">
+    <h2 class="text-xl font-bold mb-2">📤 Subir archivo Excel con números</h2>
+    <form action="{{ route('subir.excel') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="excel" accept=".xlsx,.xls,.csv" class="mb-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+            Cargar números
+        </button>
+    </form>
+</section>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
