@@ -1,13 +1,6 @@
 @extends('template')
-
+@section('title', 'Dashboard')
 @section('content')
-{{--    <h1>Bienvenido</h1>--}}
-{{--    <p>Gestiona tus envíos masivos de WhatsApp de manera sencilla y eficiente.</p>--}}
-{{--    <img--}}
-{{--        src="https://cdn-icons-png.flaticon.com/512/124/124034.png"--}}
-{{--        alt="WhatsApp"--}}
-{{--        class="welcome-image"--}}
-{{--    />--}}
     <div class="w-100 h-100">
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6">

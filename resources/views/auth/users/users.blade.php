@@ -27,8 +27,8 @@
                 <td>{{ $user->roles->pluck('name')->join(', ') }}</td>
                 <td>
                     <!-- Botón editar abre modal con datos -->
-                    <button
-                        class="btn btn-sm btn-warning btn-edit-user"
+                    <a href="javascript:void(0)"
+                        class=" btn-edit-user"
                         data-bs-toggle="modal"
                         data-bs-target="#modalEditUser"
                         data-id="{{ $user->id }}"
@@ -36,14 +36,8 @@
                         data-email="{{ $user->email }}"
                         data-roles="{{ $user->roles->pluck('name')->join(',') }}"
                     >
-                        Editar
-                    </button>
-
-                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?');">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
-                    </form>
+                        <i class="bi bi-pencil-square text-primary h4"></i>
+                    </a>
                 </td>
             </tr>
         @endforeach
@@ -152,7 +146,31 @@
     <script>
         $(document).ready(function() {
 
-            new DataTable('#table');
+            new DataTable('#table', {
+                language: {
+                    processing:     "Procesando...",
+                    search:         "",
+                    lengthMenu:     "_MENU_",
+                    info:           "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+                    infoEmpty:      "Mostrando 0 registros",
+                    infoFiltered:   "(filtrado de _MAX_ registros totales)",
+                    infoPostFix:    "",
+                    loadingRecords: "Cargando...",
+                    zeroRecords:    "No se encontraron resultados",
+                    emptyTable:     "No hay datos disponibles en esta tabla",
+                    paginate: {
+                        first:      "Primero",
+                        previous:   "Anterior",
+                        next:       "Siguiente",
+                        last:       "Último"
+                    },
+                    aria: {
+                        sortAscending:  ": activar para ordenar la columna de manera ascendente",
+                        sortDescending: ": activar para ordenar la columna de manera descendente"
+                    }
+                }
+            });
+
 
 
             $('.btn-edit-user').on('click', function() {
