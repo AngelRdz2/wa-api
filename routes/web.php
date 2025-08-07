@@ -16,7 +16,8 @@ Route::middleware('auth')->group(function () {
     // 🚪 Dashboard principal
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->name('dashboard');
+    })->middleware('can:send-message')->name('dashboard');
+
 
     // 🧾 Plantillas de mensaje
     Route::get('/plantillas', [MessageController::class, 'verPlantillas'])->name('templates.index');
@@ -43,6 +44,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+
+    Route::get('users/index', [\App\Http\Controllers\UserController::class, 'index'])->middleware('can:manage-users')->name('users.index');
+    Route::post('users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+    Route::put('users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
+    Route::delete('users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
+
 });
 
 // 🔀 Redirigir la raíz al login (o puedes redirigir al dashboard si ya está logueado)

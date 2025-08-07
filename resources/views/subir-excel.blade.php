@@ -1,5 +1,4 @@
-<!-- resources/views/subir-excel.blade.php -->
-@extends('layouts.app')
+@extends('template')
 
 @section('content')
     <h1>Subir Excel</h1>
@@ -15,11 +14,20 @@
             @endforeach
         </div>
     @endif
-
     <form action="{{ route('subir.excel') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <label for="excel">Selecciona archivo Excel:</label>
-        <input type="file" name="excel" id="excel" required>
-        <button type="submit">Subir</button>
+        <div class="card shadow-lg">
+            <div class="card-body">
+                @csrf
+                <div class="row">
+                    <div class="col-12">
+                        <label for="excel">Selecciona archivo Excel:</label>
+                        <input class="form-control" type="file" name="excel" id="excel" required>
+                    </div>
+                </div>
+            </div>
+            <div class="py-2 px-3 text-end">
+                <button type="submit" class="btn btn-primary">Subir</button>
+            </div>
+        </div>
     </form>
 @endsection
