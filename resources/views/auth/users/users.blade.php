@@ -3,20 +3,33 @@
 @section('title', 'Usuarios')
 
 @section('content')
+
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Usuarios</h1>
-        <!-- Botón que abre modal Crear -->
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateUser">Nuevo Usuario</button>
     </div>
 
-    <!-- Tabla usuarios -->
     <table id="table" class="table table-striped table-bordered align-middle">
         <thead>
         <tr>
             <th>Nombre</th>
             <th>Email</th>
             <th>Roles</th>
-            <th style="width: 150px;">Acciones</th>
+            <th style="width: 200px;">Acciones</th>
         </tr>
         </thead>
         <tbody>
@@ -26,25 +39,33 @@
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->roles->pluck('name')->join(', ') }}</td>
                 <td>
-                    <!-- Botón editar abre modal con datos -->
                     <a href="javascript:void(0)"
-                        class=" btn-edit-user"
+                        class="btn-edit-user"
                         data-bs-toggle="modal"
                         data-bs-target="#modalEditUser"
                         data-id="{{ $user->id }}"
                         data-name="{{ $user->name }}"
                         data-email="{{ $user->email }}"
                         data-roles="{{ $user->roles->pluck('name')->join(',') }}"
+                        title="Editar usuario"
                     >
                         <i class="bi bi-pencil-square text-primary h4"></i>
                     </a>
+
+                    <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline-block" onsubmit="return confirm('¿Seguro que quieres eliminar este usuario?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger ms-2" title="Eliminar usuario">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
                 </td>
             </tr>
         @endforeach
         </tbody>
     </table>
 
-{{--    {{ $users->links() }}--}}
+    {{ $users->links() }}
 
     <!-- Modal Crear Usuario -->
     <div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
@@ -143,61 +164,74 @@
 @endsection
 
 @section('scripts')
-    <script>
-        $(document).ready(function() {
+<script>
+    $(document).ready(function() {
 
-            new DataTable('#table', {
-                language: {
-                    processing:     "Procesando...",
-                    search:         "",
-                    lengthMenu:     "_MENU_",
-                    info:           "Mostrando de _START_ a _END_ de _TOTAL_ registros",
-                    infoEmpty:      "Mostrando 0 registros",
-                    infoFiltered:   "(filtrado de _MAX_ registros totales)",
-                    infoPostFix:    "",
-                    loadingRecords: "Cargando...",
-                    zeroRecords:    "No se encontraron resultados",
-                    emptyTable:     "No hay datos disponibles en esta tabla",
-                    paginate: {
-                        first:      "Primero",
-                        previous:   "Anterior",
-                        next:       "Siguiente",
-                        last:       "Último"
-                    },
-                    aria: {
-                        sortAscending:  ": activar para ordenar la columna de manera ascendente",
-                        sortDescending: ": activar para ordenar la columna de manera descendente"
-                    }
+        new DataTable('#table', {
+            language: {
+                processing:     "Procesando...",
+                search:         "",
+                lengthMenu:     "_MENU_",
+                info:           "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+                infoEmpty:      "Mostrando 0 registros",
+                infoFiltered:   "(filtrado de _MAX_ registros totales)",
+                loadingRecords: "Cargando...",
+                zeroRecords:    "No se encontraron resultados",
+                emptyTable:     "No hay datos disponibles en esta tabla",
+                paginate: {
+                    first:      "Primero",
+                    previous:   "Anterior",
+                    next:       "Siguiente",
+                    last:       "Último"
+                },
+                aria: {
+                    sortAscending:  ": activar para ordenar la columna de manera ascendente",
+                    sortDescending: ": activar para ordenar la columna de manera descendente"
                 }
-            });
+            }
+        });
 
+        $('.btn-edit-user').on('click', function() {
+            var button = $(this);
+            var userId = button.data('id');
+            var name = button.data('name');
+            var email = button.data('email');
+            var roles = button.data('roles') ? button.data('roles').split(',') : [];
 
+            var form = $('#formEditUser');
+            // Ajustamos la acción del formulario con la ruta correcta:
+            var urlTemplate = "{{ route('users.update', ':id') }}";
+            var url = urlTemplate.replace(':id', userId);
+            form.attr('action', url);
 
-            $('.btn-edit-user').on('click', function() {
-                var button = $(this);
-                var userId = button.data('id');
-                var name = button.data('name');
-                var email = button.data('email');
-                var roles = button.data('roles') ? button.data('roles').split(',') : [];
+            $('#edit_user_id').val(userId);
+            $('#edit_name').val(name);
+            $('#edit_email').val(email);
 
-                var form = $('#formEditUser');
-                form.attr('action', '/users/' + userId);
+            // Limpiar roles
+            $('.edit-role-checkbox').prop('checked', false);
 
-                $('#edit_user_id').val(userId);
-                $('#edit_name').val(name);
-                $('#edit_email').val(email);
-
-                // Limpiar roles
-                $('.edit-role-checkbox').prop('checked', false);
-
-                // Marcar roles seleccionados
-                roles.forEach(function(roleName) {
-                    $('.edit-role-checkbox').filter(function() {
-                        return $(this).val() === roleName;
-                    }).prop('checked', true);
-                });
+            // Marcar roles seleccionados
+            roles.forEach(function(roleName) {
+                $('.edit-role-checkbox').filter(function() {
+                    return $(this).val() === roleName;
+                }).prop('checked', true);
             });
         });
-    </script>
+    });
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+@endif
 
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+@endif
+
+</script>
 @endsection
