@@ -4,19 +4,7 @@
 
 @section('content')
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
 
-    @if($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-            </ul>
-        </div>
-    @endif
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Usuarios</h1>
@@ -52,56 +40,57 @@
                         <i class="bi bi-pencil-square text-primary h4"></i>
                     </a>
 
-                    <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline-block" onsubmit="return confirm('¿Seguro que quieres eliminar este usuario?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger ms-2" title="Eliminar usuario">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
+                    <a type="submit" class="border-0 ms-2" title="Eliminar usuario">
+                        <i class="bi bi-trash text-danger h4"></i>
+                    </a>
                 </td>
             </tr>
         @endforeach
         </tbody>
     </table>
 
-    {{ $users->links() }}
 
     <!-- Modal Crear Usuario -->
     <div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form action="{{ route('users.store') }}" method="POST" id="formCreateUser">
                 @csrf
-                <div class="modal-content">
+                <div class="modal-content text-start">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalCreateUserLabel">Nuevo Usuario</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="create_name" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="create_name" name="name" required>
+                        <div class="row">
+                            <div class="col-8">
+                                <label for="create_name" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="create_name" name="name" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="create_email" class="form-label">Correo</label>
+                                <input type="email" class="form-control" id="create_email" name="email" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="create_password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="create_password" name="password" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="create_password_confirmation" class="form-label">Confirmar Contraseña</label>
+                                <input type="password" class="form-control" id="create_password_confirmation" name="password_confirmation" required>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="create_email" class="form-label">Correo</label>
-                            <input type="email" class="form-control" id="create_email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="create_password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="create_password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="create_password_confirmation" class="form-label">Confirmar Contraseña</label>
-                            <input type="password" class="form-control" id="create_password_confirmation" name="password_confirmation" required>
-                        </div>
-                        <div class="mb-3">
+                        <div class="col-12">
                             <label class="form-label">Roles</label>
-                            @foreach($roles as $role)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="{{ $role->name }}" name="roles[]" id="create_role_{{ $role->id }}">
-                                    <label class="form-check-label" for="create_role_{{ $role->id }}">{{ $role->name }}</label>
-                                </div>
-                            @endforeach
+                            <div class="row">
+                                @foreach($roles as $role)
+                                    <div class="col-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="{{ $role->name }}" name="roles[]" id="create_role_{{ $role->id }}">
+                                            <label class="form-check-label" for="create_role_{{ $role->id }}">{{ $role->name }}</label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -178,12 +167,12 @@
                 loadingRecords: "Cargando...",
                 zeroRecords:    "No se encontraron resultados",
                 emptyTable:     "No hay datos disponibles en esta tabla",
-                paginate: {
-                    first:      "Primero",
-                    previous:   "Anterior",
-                    next:       "Siguiente",
-                    last:       "Último"
-                },
+                // paginate: {
+                //     first:      "Primero",
+                //     previous:   "Anterior",
+                //     next:       "Siguiente",
+                //     last:       "Último"
+                // },
                 aria: {
                     sortAscending:  ": activar para ordenar la columna de manera ascendente",
                     sortDescending: ": activar para ordenar la columna de manera descendente"
@@ -219,19 +208,7 @@
             });
         });
     });
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-    </div>
-@endif
 
-@if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-    </div>
-@endif
 
 </script>
 @endsection

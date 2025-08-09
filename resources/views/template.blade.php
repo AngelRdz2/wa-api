@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>@yield('title')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Bootstrap 5 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -206,8 +207,12 @@
     </a>
 
     <div class="collapse ps-2" id="adminSubmenu">
+{{--        @can('manage-users')--}}
         <a href="{{route('users.index')}}" class="d-block px-4 py-2 text-white-50">Usuarios</a>
-        <a href="" class="d-block px-4 py-2 text-white-50">Roles</a>
+{{--        @endcan--}}
+{{--        @can('rol-write')--}}
+        <a href="{{ route('roles.index') }}" class="d-block px-4 py-2 text-white-50">Roles</a>
+{{--        @endcan--}}
         <a href="" class="d-block px-4 py-2 text-white-50">Permisos</a>
     </div>
     <a class="d-flex justify-content-between align-items-center px-3 py-2 text-white"
@@ -251,15 +256,30 @@
 
 
 
-<div id="content" class="content d-flex flex-column flex-column-fluid bg-secondary bg-opacity-25">
+<div id="content" class="content d-flex flex-column flex-column-fluid bg-secondary bg-opacity-25 text-start">
     <div id="kt_content_container" class="container-fluid">
         <div class="card">
             <div class="card-body">
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @yield('content')
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>

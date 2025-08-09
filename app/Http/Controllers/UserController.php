@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,6 +21,7 @@ class UserController extends Controller
     // Guardar usuario nuevo
     public function store(Request $request)
     {
+        DB::beginTransaction();
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -35,6 +37,7 @@ class UserController extends Controller
 
         $user->syncRoles($request->roles);
 
+        DB::commit();
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
     }
 

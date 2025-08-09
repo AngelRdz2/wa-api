@@ -15,6 +15,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
     use HasRoles;
 
+    protected $guarded = [];
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +27,7 @@ class User extends Authenticatable
     'password' => 'hashed',
 ];
 
-    
+
     /**
      * The attributes that should be hidden for serialization.
      *
