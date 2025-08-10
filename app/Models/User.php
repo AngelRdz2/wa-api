@@ -15,18 +15,17 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
     use HasRoles;
 
-    protected $guarded = [];
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $casts = [
-    'email_verified_at' => 'datetime',
-    'password' => 'hashed',
-];
-
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
