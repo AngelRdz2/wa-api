@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 
 namespace App\Http\Middleware;
 
@@ -7,8 +6,12 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 
 class VerifyCsrfToken extends Middleware
 {
-    // Aquí le dices a Laravel que NO aplique CSRF a esta ruta exacta
+    /**
+     * Las URIs que deberían ser excluidas de la verificación CSRF.
+     *
+     * @var array<int, string>
+     */
     protected $except = [
-        'waapi/webhook',
+        'waapi/webhook', // Laravel NO aplicará CSRF en esta ruta
     ];
 }

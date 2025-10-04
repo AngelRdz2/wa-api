@@ -2,9 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ClientMessage extends Model
 {
-    protected $fillable = ['phone', 'message', 'direction'];
+    use HasFactory;
+
+   protected $fillable = [
+    'from_number',
+    'to_number',
+    'message',
+    'direction',
+    'received_at',
+    'phone',
+];
+
 }

@@ -1,41 +1,47 @@
 @extends('layouts.app')
 
+@section('title', 'Respuestas de Mensajes')
+
 @section('content')
-<div class="container mt-5">
-    <h2>Mensajes Recibidos</h2>
+<div class="container mt-4">
+    <h1 class="mb-4">Mensajes Recibidos</h1>
 
     @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Teléfono</th>
-                <th>Mensaje</th>
-                <th>Fecha</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($mensajes as $msg)
+    @if($mensajes->isEmpty())
+        <p>No hay mensajes todavía.</p>
+    @else
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $msg->phone }}</td>
-                    <td>{{ $msg->message }}</td>
-                    <td>{{ $msg->created_at->format('d/m/Y H:i') }}</td>
+                    <th>#</th>
+                    <th>Teléfono</th>
+                    <th>Mensaje</th>
+                    <th>Fecha</th>
+                    <th>Responder</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($mensajes as $index => $mensaje)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $mensaje->from }}</td>
+                    <td>{{ $mensaje->message }}</td>
+                    <td>{{ $mensaje->created_at->format('d/m/Y H:i') }}</td>
                     <td>
-                        <form action="{{ route('messages.reply') }}" method="POST">
+                        <form action="{{ route('messages.reply') }}" method="POST" class="d-flex">
                             @csrf
-                            <input type="hidden" name="phone" value="{{ $msg->phone }}">
-                            <input type="text" name="message" placeholder="Escribe tu respuesta" required>
-                            <button type="submit" class="btn btn-primary btn-sm">Responder</button>
+                            <input type="hidden" name="phone" value="{{ $mensaje->from }}">
+                            <input type="text" name="message" class="form-control me-2" placeholder="Escribe tu respuesta" required>
+                            <button type="submit" class="btn btn-success">Enviar</button>
                         </form>
                     </td>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 </div>
 @endsection

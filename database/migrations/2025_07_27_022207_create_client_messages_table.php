@@ -11,14 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('client_messages', function (Blueprint $table) {
-    $table->id();
-    $table->string('phone');
-    $table->text('message');
-    $table->enum('direction', ['inbound', 'outbound']); // recibido o enviado
-    $table->timestamps();
-});
+        Schema::create('client_messages', function (Blueprint $table) {
+            $table->id();
 
+            // Teléfono del cliente (quien envía o recibe)
+            $table->string('from')->nullable();  // número del remitente
+            $table->string('to')->nullable();    // número del destinatario
+
+            // Contenido del mensaje
+            $table->text('message');
+
+            // inbound = recibido | outbound = enviado
+            $table->enum('direction', ['inbound', 'outbound']);
+
+            // Fecha/hora que envía WAAPI (no siempre coincide con created_at)
+            $table->timestamp('received_at')->nullable();
+
+            $table->timestamps();
+        });
     }
 
     /**

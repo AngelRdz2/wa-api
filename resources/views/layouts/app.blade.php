@@ -32,5 +32,7 @@
             @yield('content') {{-- ✅ Aquí está el cambio clave --}}
         </main>
     </div>
+    @stack('styles')
+
 </body>
 </html>

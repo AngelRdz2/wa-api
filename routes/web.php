@@ -6,11 +6,21 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\UserController;
 
-// Ruta webhook sin auth
-Route::post('/waapi/webhook', [WebhookController::class, 'handle']);
+//Route::post('/webhooks/waapi/{token}', [WebhookController::class, 'handle']);
 
 // Rutas públicas de autenticación
 require __DIR__.'/auth.php';
+
+// Mostrar la vista de respuestas
+Route::get('/responses', [MessageController::class, 'showResponses'])
+    ->name('responses');
+
+// Enviar respuesta a un mensaje
+Route::post('/responses/reply', [MessageController::class, 'reply'])
+    ->name('responses.reply')
+    ->middleware('can:send-message');
+
+
 
 // Grupo de rutas protegidas (requiere login)
 Route::middleware('auth')->group(function () {
@@ -28,15 +38,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/subir-excel', [MessageController::class, 'formUploadExcel'])->name('excel.upload');
     Route::post('/subir-excel', [MessageController::class, 'subirExcel'])->name('subir.excel');
 
-    // Enviar mensajes
+    Route::get('/messages-preview', [MessageController::class, 'previewMessages'])
+    ->name('messages-preview');
+
+     //Enviar mensajes
     Route::get('/enviar-mensajes', [MessageController::class, 'formSendMessages'])->name('messages.sendForm');
     Route::post('/send-messages', [MessageController::class, 'sendMessage'])->name('messages.send');
-
+    
+    
     // Ver respuestas
-    Route::get('/respuestas', [MessageController::class, 'showResponses'])->name('messages.responses');
-    Route::post('/messages/reply', [MessageController::class, 'reply'])->name('messages.reply');
-
-    // Perfil de usuario
+   // Route::get('/respuestas', [MessageController::class, 'showResponses'])->name('messages.responses');
+   // Route::post('/messages/reply', [MessageController::class, 'reply'])->name('messages.reply');
+   
+   // Perfil de usuario
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -50,16 +64,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/roles/addPermissions', [\App\Http\Controllers\RolController::class, 'addPermissions'] )->name('roles.addPermissions');//->middleware('can:rol-write');
     Route::get('/roles/getPermissions', [\App\Http\Controllers\RolController::class, 'getPermissions'] )->name('roles.getPermissions');//->middleware('can:rol-write');
 
-  Route::get('/permission/index', [\App\Http\Controllers\PermissionController::class, 'index'])->name('permission.index'); // lectura
-Route::post('/permission/store', [\App\Http\Controllers\PermissionController::class, 'store'])->name('permission.store'); // creación/actualización
-Route::post('/permission/destroy', [\App\Http\Controllers\PermissionController::class, 'destroy'])->name('permission.destroy'); // eliminación
-Route::post('/permission/addRoles', [\App\Http\Controllers\PermissionController::class, 'addRoles'])->name('permission.addRoles'); // asignar roles a permiso
-Route::get('/permission/getRoles', [\App\Http\Controllers\PermissionController::class, 'getRoles'])->name('permission.getRoles'); // obtener roles del permiso
+    Route::get('/permission/index', [\App\Http\Controllers\PermissionController::class, 'index'])->name('permission.index'); // lectura
+    Route::post('/permission/store', [\App\Http\Controllers\PermissionController::class, 'store'])->name('permission.store'); // creación/actualización
+    Route::post('/permission/destroy', [\App\Http\Controllers\PermissionController::class, 'destroy'])->name('permission.destroy'); // eliminación
+    Route::post('/permission/addRoles', [\App\Http\Controllers\PermissionController::class, 'addRoles'])->name('permission.addRoles'); // asignar roles a permiso
+    Route::get('/permission/getRoles', [\App\Http\Controllers\PermissionController::class, 'getRoles'])->name('permission.getRoles'); // obtener roles del permiso
 
-
-
-
+    
 });
+
+
 
 // Redirigir raíz a login
 Route::get('/', function () {

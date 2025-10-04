@@ -1,34 +1,19 @@
-@extends('layouts.app')
+<div class="chat-box">
+    @forelse($mensajes as $message)
+        <div class="chat-bubble {{ $message->direction === 'inbound' ? 'inbound' : 'outbound' }}">
+            <div class="chat-message">{{ $message->message }}</div>
+            <div class="chat-meta">
+                {{ $message->from }} · {{ $message->received_at->format('d/m/Y H:i') }}
+            </div>
+        </div>
+    @empty
+        <p>No hay mensajes.</p>
+    @endforelse
 
-@section('content')
-<div class="container">
-    <h2>Mensajes Recibidos</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Teléfono</th>
-                <th>Mensaje</th>
-                <th>Fecha</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($mensajes as $msg)
-                <tr>
-                    <td>{{ $msg->phone }}</td>
-                    <td>{{ $msg->message }}</td>
-                    <td>{{ $msg->created_at }}</td>
-                    <td>
-                        <form action="{{ route('messages.reply') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="phone" value="{{ $msg->phone }}">
-                            <input type="text" name="message" placeholder="Escribe tu respuesta">
-                            <button class="btn btn-primary btn-sm">Responder</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <form action="{{ route('messages.reply') }}" method="POST" class="chat-input">
+        @csrf
+        <input type="hidden" name="phone" value="{{ $mensajes->last()->from ?? '' }}">
+        <input type="text" name="message" placeholder="Escribe tu respuesta..." required>
+        <button type="submit">Enviar</button>
+    </form>
 </div>
-@endsection

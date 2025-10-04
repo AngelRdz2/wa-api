@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
 use App\Models\MessageTemplate;
 use App\Models\MoratoriumClassification;
 use App\Models\ClientMessage;
-use App\Services\WaapiService; // Asegúrate que esta clase exista y esté bien namespaceada
+use App\Services\WaapiService;
 
 class MessageController extends Controller
 {
@@ -38,39 +38,60 @@ class MessageController extends Controller
             return back()->withErrors(['El archivo está vacío o no se pudo leer.']);
         }
 
-        $hoja = $coleccion->first();
+        $hoja = $coleccion->first()->slice(1); // Saltar encabezados
         $datosPorCategoria = [];
 
         foreach ($hoja as $fila) {
-            if (empty($fila[0]) || empty($fila[2])) {
-                continue; // Ignorar filas sin número o sin clasificación
-            }
+            if (empty($fila[0]) || empty($fila[2])) continue;
 
-            $numero = preg_replace('/\D/', '', $fila[0]); // Solo números
-            $estatus = isset($fila[1]) ? trim($fila[1]) : '';
-            $clasificacion = trim($fila[2]);
-            $nombre = isset($fila[3]) ? trim($fila[3]) : '';
-            $factura = isset($fila[4]) ? trim($fila[4]) : '';
-            $monto = isset($fila[5]) ? trim($fila[5]) : '';
+            $numero = preg_replace('/\D/', '', $fila[0]);
+            $estatus = trim($fila[1] ?? '');
+            $clasificacionExcel = strtolower(trim($fila[2]));
+            $nombre = trim($fila[3] ?? '');
+            $factura = trim($fila[4] ?? '');
+            $monto = trim($fila[5] ?? '');
 
-            if ($numero && $clasificacion) {
-                $datosPorCategoria[$clasificacion][] = [
-                    'numero' => $numero,
-                    'tipo_mensaje' => $estatus,
-                    'nombre' => $nombre,
-                    'factura' => $factura,
-                    'monto' => $monto,
-                ];
+            if ($numero && $clasificacionExcel) {
+                $datosPorCategoria[$clasificacionExcel][] = compact('numero', 'estatus', 'nombre', 'factura', 'monto');
             }
         }
 
         session(['numeros_por_categoria' => $datosPorCategoria]);
 
-        // Redirigir a vista previa
-        return redirect()->route('messages.preview');
+        return redirect()->route('messages-preview');
     }
 
-    // Mostrar formulario para enviar mensajes (solo botón)
+    // Mostrar vista previa de mensajes
+    public function previewMessages()
+    {
+        $datosPorCategoria = session('numeros_por_categoria', []);
+        $mensajesPorCategoria = [];
+
+        foreach ($datosPorCategoria as $categoriaExcel => $numeros) {
+            $clasificacion = MoratoriumClassification::whereRaw('LOWER(name) = ?', [$categoriaExcel])->first();
+            if (!$clasificacion) continue;
+
+            $plantilla = MessageTemplate::where('moratorium_classification_id', $clasificacion->id)->first();
+            if (!$plantilla) continue;
+
+            foreach ($numeros as $dato) {
+                $msgPersonalizado = str_replace(
+                    ['{nombre}', '{factura}', '{monto}'],
+                    [$dato['nombre'], $dato['factura'], $dato['monto']],
+                    $plantilla->template
+                );
+
+                $mensajesPorCategoria[$clasificacion->name][] = [
+                    'numero' => $dato['numero'],
+                    'mensaje' => $msgPersonalizado,
+                ];
+            }
+        }
+
+        return view('messages-preview', compact('mensajesPorCategoria'));
+    }
+
+    // Formulario para confirmar y enviar mensajes
     public function formSendMessages()
     {
         $categorias = session('numeros_por_categoria', []);
@@ -81,7 +102,6 @@ class MessageController extends Controller
     public function sendMessage(Request $request)
     {
         $datosPorCategoria = session('numeros_por_categoria', []);
-
         if (empty($datosPorCategoria)) {
             return back()->withErrors(['message' => 'No hay números cargados para enviar mensajes.']);
         }
@@ -89,17 +109,11 @@ class MessageController extends Controller
         $client = new Client();
 
         try {
-            $response = $client->request('GET', 'https://waapi.app/api/v1/instances', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->apiToken,
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                ]
+            $response = $client->get('https://waapi.app/api/v1/instances', [
+                'headers' => $this->getHeaders()
             ]);
 
-            $responseBody = json_decode($response->getBody(), true);
-            $instances = $responseBody['instances'] ?? [];
-
+            $instances = json_decode($response->getBody(), true)['instances'] ?? [];
             if (empty($instances)) {
                 return back()->withErrors(['message' => 'No se encontraron instancias activas.']);
             }
@@ -108,32 +122,22 @@ class MessageController extends Controller
             $sendMessageUrl = "https://waapi.app/api/v1/instances/{$instanceId}/client/action/send-message";
 
             foreach ($datosPorCategoria as $categoria => $numeros) {
-                $plantilla = MessageTemplate::whereHas('classification', function($query) use ($categoria) {
+                $plantilla = MessageTemplate::whereHas('classification', function ($query) use ($categoria) {
                     $query->where('name', $categoria);
                 })->first();
 
-                if (!$plantilla) {
-                    continue;
-                }
-
-                $templateContent = $plantilla->template;
+                if (!$plantilla) continue;
 
                 foreach ($numeros as $dato) {
-                    $numero = $dato['numero'];
-                    $chatId = "503{$numero}@c.us";
-
+                    $chatId = "503{$dato['numero']}@c.us";
                     $msgPersonalizado = str_replace(
                         ['{nombre}', '{factura}', '{monto}'],
                         [$dato['nombre'], $dato['factura'], $dato['monto']],
-                        $templateContent
+                        $plantilla->template
                     );
 
-                    $client->request('POST', $sendMessageUrl, [
-                        'headers' => [
-                            'Authorization' => 'Bearer ' . $this->apiToken,
-                            'Accept' => 'application/json',
-                            'Content-Type' => 'application/json',
-                        ],
+                    $client->post($sendMessageUrl, [
+                        'headers' => $this->getHeaders(),
                         'json' => [
                             'chatId' => $chatId,
                             'message' => $msgPersonalizado,
@@ -149,67 +153,42 @@ class MessageController extends Controller
         }
     }
 
-    // Vista previa mensajes antes de enviar
-    public function previewMessages()
-    {
-        $datosPorCategoria = session('numeros_por_categoria', []);
-
-        if (empty($datosPorCategoria)) {
-            return back()->withErrors(['message' => 'No hay datos cargados para mostrar vista previa.']);
-        }
-
-        $mensajesPorCategoria = [];
-
-        foreach ($datosPorCategoria as $categoria => $numeros) {
-            $plantilla = MessageTemplate::whereHas('classification', function($query) use ($categoria) {
-                $query->where('name', $categoria);
-            })->first();
-
-            if (!$plantilla) continue;
-
-            $templateContent = $plantilla->template;
-
-            foreach ($numeros as $dato) {
-                $msgPersonalizado = str_replace(
-                    ['{nombre}', '{factura}', '{monto}'],
-                    [$dato['nombre'], $dato['factura'], $dato['monto']],
-                    $templateContent
-                );
-
-                $mensajesPorCategoria[$categoria][] = [
-                    'numero' => $dato['numero'],
-                    'mensaje' => $msgPersonalizado,
-                ];
-            }
-        }
-
-        return view('messages-preview', compact('mensajesPorCategoria'));
-    }
-
     // Responder mensaje recibido
     public function reply(Request $request)
     {
-        $phone = $request->input('phone');
-        $message = $request->input('message');
-
-        // Enviar usando WaapiService (asegúrate de tener esta clase creada)
-        $waapi = new WaapiService();
-        $waapi->sendMessage($phone, $message);
-
-        // Guardar el mensaje en la base de datos
-        ClientMessage::create([
-            'phone' => $phone,
-            'message' => $message,
-            'direction' => 'outbound',
+        $request->validate([
+            'phone' => 'required|string',
+            'message' => 'required|string',
         ]);
 
-        return redirect()->route('messages.responses')->with('success', 'Mensaje enviado');
+        $waapi = new WaapiService();
+        $waapi->sendMessage($request->phone, $request->message);
+
+        ClientMessage::create([
+            'from' => env('MY_PHONE_NUMBER'),
+            'to' => $request->phone,
+            'message' => $request->message,
+            'direction' => 'outbound',
+            'received_at' => now(),
+        ]);
+
+        return redirect()->route('messages.responses')->with('success', 'Mensaje enviado correctamente');
     }
 
     // Mostrar mensajes recibidos y respuestas
     public function showResponses()
     {
-        $mensajes = ClientMessage::orderBy('created_at', 'desc')->get();
+        $mensajes = ClientMessage::latest()->get();
         return view('responses', compact('mensajes'));
+    }
+
+    // Encabezados comunes para WAAPI
+    private function getHeaders(): array
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->apiToken,
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+        ];
     }
 }
