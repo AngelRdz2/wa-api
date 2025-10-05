@@ -154,26 +154,77 @@ class MessageController extends Controller
     }
 
     // Responder mensaje recibido
-    public function reply(Request $request)
-    {
-        $request->validate([
-            'phone' => 'required|string',
-            'message' => 'required|string',
+public function reply(Request $request)
+{
+    $request->validate([
+        'phone' => 'required|string',
+        'message' => 'required|string',
+    ]);
+
+    \Log::info('Método reply ejecutado', [
+        'phone' => $request->phone,
+        'message' => $request->message,
+    ]);
+
+    $client = new \GuzzleHttp\Client();
+
+    try {
+        // Obtener instancia activa
+        $response = $client->get('https://waapi.app/api/v1/instances', [
+            'headers' => $this->getHeaders()
         ]);
 
-        $waapi = new WaapiService();
-        $waapi->sendMessage($request->phone, $request->message);
+        $instances = json_decode($response->getBody(), true)['instances'] ?? [];
+        if (empty($instances)) {
+            \Log::error('No se encontraron instancias activas en WAAPI');
+            return back()->withErrors(['message' => 'No se encontraron instancias activas.']);
+        }
 
+        $instanceId = $instances[0]['id'];
+        $sendMessageUrl = "https://waapi.app/api/v1/instances/{$instanceId}/client/action/send-message";
+
+        // Limpiar número y formatear chatId
+        $numero = preg_replace('/[^0-9]/', '', $request->phone);
+        $chatId = "{$numero}@c.us";
+
+        \Log::info('Enviando mensaje a WAAPI', [
+            'chatId' => $chatId,
+            'message' => $request->message,
+            'url' => $sendMessageUrl,
+        ]);
+
+        // Enviar mensaje
+        $waapiResponse = $client->post($sendMessageUrl, [
+            'headers' => $this->getHeaders(),
+            'json' => [
+                'chatId' => $chatId,
+                'message' => $request->message,
+            ],
+        ]);
+
+        $body = $waapiResponse->getBody()->getContents();
+        \Log::info('Respuesta WAAPI:', ['body' => $body]);
+
+        // Guardar en base de datos
         ClientMessage::create([
-            'from' => env('MY_PHONE_NUMBER'),
-            'to' => $request->phone,
+            'from_number' => env('MY_PHONE_NUMBER'),
+            'to_number' => $chatId,
             'message' => $request->message,
             'direction' => 'outbound',
             'received_at' => now(),
+            'phone' => $chatId,
         ]);
 
-        return redirect()->route('messages.responses')->with('success', 'Mensaje enviado correctamente');
+        return redirect()->route('responses')->with('success', 'Mensaje enviado correctamente');
+
+    } catch (\Exception $e) {
+        \Log::error('Error al enviar mensaje:', [$e->getMessage()]);
+        return back()->withErrors(['message' => 'Error al enviar mensaje: ' . $e->getMessage()]);
     }
+}
+
+
+
 
     // Mostrar mensajes recibidos y respuestas
     public function showResponses()

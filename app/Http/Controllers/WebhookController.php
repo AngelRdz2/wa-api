@@ -11,7 +11,7 @@ class WebhookController extends Controller
  public function handle(Request $request)
 {
     try {
-        $payload = json_encode($request->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $payload = $request->getContent();
         $signature = $request->header('X-WAAPI-HMAC');
         $expected = hash_hmac('sha256', $payload, env('WAAPI_WEBHOOK_SECRET'));
 
