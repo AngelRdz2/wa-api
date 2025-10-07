@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
 
             // Teléfono del cliente (quien envía o recibe)
-            $table->string('from')->nullable();  // número del remitente
-            $table->string('to')->nullable();    // número del destinatario
+            $table->string('from_number')->nullable();  // número del remitente
+            $table->string('to_number')->nullable();   // número del destinatario
 
             // Contenido del mensaje
             $table->text('message');

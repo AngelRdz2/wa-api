@@ -9,6 +9,7 @@ use App\Models\MessageTemplate;
 use App\Models\MoratoriumClassification;
 use App\Models\ClientMessage;
 use App\Services\WaapiService;
+use App\Models\User;
 
 class MessageController extends Controller
 {
@@ -42,6 +43,9 @@ class MessageController extends Controller
         $datosPorCategoria = [];
 
         foreach ($hoja as $fila) {
+            $userName = explode(",",$fila[6]);
+            $userId = User::whereIn('name', $userName)->pluck('id')->toArray();
+            dd($userId);
             if (empty($fila[0]) || empty($fila[2])) continue;
 
             $numero = preg_replace('/\D/', '', $fila[0]);
