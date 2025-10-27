@@ -6,17 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
-    {
-        Schema::table('client_messages', function (Blueprint $table) {
-            $table->timestamp('received_at')->nullable()->after('direction');
-        });
-    }
+    /**
+     * Run the migrations.
+     */
+    public function up()
+{
+    Schema::table('client_messages', function (Blueprint $table) {
+        $table->timestamp('read_at')->nullable()->after('received_at');
+    });
+}
 
+
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('client_messages', function (Blueprint $table) {
-            $table->dropColumn('received_at');
+            //
         });
     }
 };

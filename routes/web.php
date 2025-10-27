@@ -6,7 +6,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\UserController;
 
+
+
+
+Route::get('/responses', [MessageController::class, 'showResponses'])->name('responses');
+Route::post('/responses/reply', [MessageController::class, 'reply'])->name('responses.reply');
+
+
+//Route::post('/api/waapi-webhook', [WebhookController::class, 'handle']);
+
 //Route::post('/webhooks/waapi/{token}', [WebhookController::class, 'handle']);
+
 
 // Rutas públicas de autenticación
 require __DIR__.'/auth.php';
@@ -18,7 +28,9 @@ Route::get('/responses', [MessageController::class, 'showResponses'])
 // Enviar respuesta a un mensaje
 Route::post('/responses/reply', [MessageController::class, 'reply'])
     ->name('responses.reply')
-    ->middleware('can:send-message');
+    ->middleware('auth');
+
+//Route::resource('users', UserController::class);
 
 
 
@@ -42,7 +54,9 @@ Route::middleware('auth')->group(function () {
     ->name('messages-preview');
 
      //Enviar mensajes
-    Route::get('/enviar-mensajes', [MessageController::class, 'formSendMessages'])->name('messages.sendForm');
+    // Asegúrate que esta línea esté dentro del grupo Route::middleware('auth')->group(...)
+Route::get('/enviar-mensajes', [MessageController::class, 'formSendMessages'])->name('messages.send.form'); 
+//
     Route::post('/send-messages', [MessageController::class, 'sendMessage'])->name('messages.send');
     
     

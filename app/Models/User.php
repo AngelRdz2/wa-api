@@ -2,51 +2,86 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-
+use App\Models\WhatsappInstance;
+use App\Models\Client;
+use App\Models\ClientMessage;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-    use HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'area',
+        'status',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'status' => 'boolean', // ✅ si usas true/false para estado
+    ];
+
+    // ----------------------------------------------------------------------
+    // RELACIONES
+    // ----------------------------------------------------------------------
+
+    public function whatsappInstances()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsToMany(
+            WhatsappInstance::class,
+            'instance_user',
+            'user_id',
+            'whatsapp_instance_id'
+        );
+    }
+
+    public function clients()
+    {
+        return $this->belongsToMany(
+            Client::class,
+            'user_client',
+            'user_id',
+            'client_id'
+        );
+    }
+
+    public function clientMessages()
+    {
+        return $this->hasMany(ClientMessage::class, 'user_id');
+    }
+
+    // ----------------------------------------------------------------------
+    // HELPERS PERSONALIZADOS
+    // ----------------------------------------------------------------------
+
+    public function isSuperAdmin()
+    {
+        return $this->email === 'supervisotiendas@gmail.com';
+    }
+
+    public function esAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function esEncargado()
+    {
+        return $this->hasRole('encargado');
+    }
+
+    public function esEncargadoDe(Client $client)
+    {
+        return $this->clients->contains($client);
     }
 }

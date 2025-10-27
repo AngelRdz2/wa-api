@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        'waapi/webhook', // Laravel NO aplicará CSRF en esta ruta
+        'api/webhook-waapi',
     ];
 }

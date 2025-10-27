@@ -6,7 +6,7 @@ use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\MessageController;
 
 // ✅ Webhook para recibir mensajes desde WAAPI
-Route::post('/waapi-webhook', [WebhookController::class, 'handle']);
+Route::post('/webhook-waapi', [WebhookController::class, 'handle']); // ✅
 
 // ✅ Ruta para responder mensajes manualmente
 Route::post('/messages/reply', [MessageController::class, 'reply'])->name('messages.reply');
